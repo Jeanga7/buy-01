@@ -23,10 +23,18 @@ public class UserMapper {
             return null;
         }
         
+        // Utilise l'avatar fourni ou un avatar par défaut
+        String avatar = registerRequest.getAvatar();
+        if (avatar == null || avatar.trim().isEmpty()) {
+            avatar = "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y";
+        }
+        
         return User.builder()
                 .name(registerRequest.getName())
                 .email(registerRequest.getEmail())
                 .password(registerRequest.getPassword()) // Le mot de passe sera encodé dans le service
+                .avatar(avatar)
+                .role(registerRequest.getRole()) // Ajout du rôle
                 .build();
     }
     
@@ -45,5 +53,12 @@ public class UserMapper {
                 .role(user.getRole())
                 .avatar(user.getAvatar())
                 .build();
+    }
+    
+    /**
+     * Alias pour toUserResponse
+     */
+    public UserResponse toDto(User user) {
+        return toUserResponse(user);
     }
 }

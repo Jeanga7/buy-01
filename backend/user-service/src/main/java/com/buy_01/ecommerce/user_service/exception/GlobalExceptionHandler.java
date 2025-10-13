@@ -1,17 +1,21 @@
 package com.buy_01.ecommerce.user_service.exception;
 
+import com.buy_01.ecommerce.user_service.dto.ErrorResponse;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.validation.FieldError;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.servlet.NoHandlerFoundException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
-import java.util.Map;
-import java.util.Objects;
+import java.time.LocalDateTime;
 import java.util.stream.Collectors;
 
 /**
@@ -22,10 +26,6 @@ import java.util.stream.Collectors;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    // Constantes pour les messages d'erreur
-    private static final String ERROR_MESSAGE_KEY = "message";
-    private static final String UNEXPECTED_ERROR_MESSAGE = "Une erreur inattendue s'est produite";
-
     /**
      * Gère les erreurs de validation des champs annotés avec @Valid.
      *
@@ -33,21 +33,85 @@ public class GlobalExceptionHandler {
      * @return une réponse HTTP 400 avec les détails des erreurs de validation
      */
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Map<String, String>> handleValidationExceptions(MethodArgumentNotValidException ex) {
-        log.warn("Erreur de validation des champs: {}", ex.getMessage());
-        
-        Map<String, String> errors = ex.getBindingResult().getAllErrors().stream()
-                .filter(FieldError.class::isInstance)
-                .map(FieldError.class::cast)
-                .collect(Collectors.toMap(
-                        FieldError::getField,
-                        error -> Objects.requireNonNullElse(error.getDefaultMessage(), ""),
-                        (existing, replacement) -> existing
-                ));
-
-        return ResponseEntity.badRequest().body(errors);
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleValidationExceptions(MethodArgumentNotValidException ex) {
+        String errorMessage = ex.getBindingResult()
+            .getFieldErrors()
+            .stream()
+            .map(error -> error.getField() + ": " + error.getDefaultMessage())
+            .collect(Collectors.joining(", "));
+            
+        return new ErrorResponse(
+            HttpStatus.BAD_REQUEST.value(),
+            "Données invalides: " + errorMessage,
+            LocalDateTime.now()
+        );
     }
-
+    
+    /**
+     * Gère les erreurs d'authentification (mauvais identifiants).
+     *
+     * @param ex l'exception d'authentification
+     * @return une réponse HTTP 401 avec le message d'erreur
+     */
+    @ExceptionHandler(BadCredentialsException.class)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    public ErrorResponse handleBadCredentialsException(BadCredentialsException ex) {
+        return new ErrorResponse(
+            HttpStatus.UNAUTHORIZED.value(),
+            "Email ou mot de passe incorrect",
+            LocalDateTime.now()
+        );
+    }
+    
+    /**
+     * Gère les erreurs d'authentification génériques.
+     *
+     * @param ex l'exception d'authentification
+     * @return une réponse HTTP 401 avec le message d'erreur
+     */
+    @ExceptionHandler(AuthenticationException.class)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    public ErrorResponse handleAuthenticationException(AuthenticationException ex) {
+        return new ErrorResponse(
+            HttpStatus.UNAUTHORIZED.value(),
+            "Échec de l'authentification",
+            LocalDateTime.now()
+        );
+    }
+    
+    /**
+     * Gère les erreurs de ressource non trouvée.
+     *
+     * @param ex l'exception de ressource non trouvée
+     * @return une réponse HTTP 404 avec le message d'erreur
+     */
+    @ExceptionHandler(UserNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ErrorResponse handleUserNotFoundException(UserNotFoundException ex) {
+        return new ErrorResponse(
+            HttpStatus.NOT_FOUND.value(),
+            ex.getMessage(),
+            LocalDateTime.now()
+        );
+    }
+    
+    /**
+     * Gère les erreurs de conflit (comme un email déjà utilisé).
+     *
+     * @param ex l'exception de conflit
+     * @return une réponse HTTP 409 avec le message d'erreur
+     */
+    @ExceptionHandler(UserAlreadyExistsException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public ErrorResponse handleUserAlreadyExistsException(UserAlreadyExistsException ex) {
+        return new ErrorResponse(
+            HttpStatus.CONFLICT.value(),
+            ex.getMessage(),
+            LocalDateTime.now()
+        );
+    }
+    
     /**
      * Gère les violations de contraintes de validation.
      *
@@ -55,64 +119,102 @@ public class GlobalExceptionHandler {
      * @return une réponse HTTP 400 avec les détails des violations
      */
     @ExceptionHandler(ConstraintViolationException.class)
-    public ResponseEntity<Map<String, String>> handleConstraintViolation(ConstraintViolationException ex) {
-        log.warn("Violation de contrainte: {}", ex.getMessage());
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleConstraintViolationException(ConstraintViolationException ex) {
+        String errorMessage = ex.getConstraintViolations().stream()
+            .map(ConstraintViolation::getMessage)
+            .collect(Collectors.joining(", "));
+            
+        return new ErrorResponse(
+            HttpStatus.BAD_REQUEST.value(),
+            "Erreur de validation: " + errorMessage,
+            LocalDateTime.now()
+        );
+    }
+    
+    /**
+     * Gestionnaire d'exception générique pour toutes les autres exceptions non gérées.
+     *
+     * @param ex l'exception non gérée
+     * @return une réponse HTTP 500 avec un message d'erreur générique
+     */
+    @ExceptionHandler(org.springframework.security.access.AccessDeniedException.class)
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    public ErrorResponse handleAccessDeniedException(org.springframework.security.access.AccessDeniedException ex) {
+        log.warn("Accès refusé: {}", ex.getMessage());
+        String message = "Accès refusé. Vous n'avez pas les autorisations nécessaires pour effectuer cette action.";
         
-        Map<String, String> errors = ex.getConstraintViolations().stream()
-                .collect(Collectors.toMap(
-                        violation -> violation.getPropertyPath().toString(),
-                        ConstraintViolation::getMessage,
-                        (existing, replacement) -> existing
-                ));
-
-        return ResponseEntity.badRequest().body(errors);
+        // Message plus détaillé si c'est une erreur de rôle
+        if (ex.getMessage() != null && ex.getMessage().contains("Access is denied")) {
+            message = "Accès refusé. Cette action nécessite des privilèges d'administrateur.";
+        }
+        
+        return new ErrorResponse(
+            HttpStatus.FORBIDDEN.value(),
+            message,
+            LocalDateTime.now()
+        );
     }
 
     /**
-     * Gère les tentatives de création d'un utilisateur avec un email existant.
+     * Gère les erreurs 404 pour les endpoints inexistants.
+     * Cette méthode est appelée quand aucun handler n'est trouvé pour une requête.
      *
-     * @param ex l'exception d'utilisateur existant
-     * @return une réponse HTTP 409 (Conflict) avec un message d'erreur
+     * @param ex l'exception NoHandlerFoundException
+     * @param request la requête web
+     * @return une réponse HTTP 404 avec un message clair
      */
-    @ExceptionHandler(UserAlreadyExistsException.class)
-    public ResponseEntity<Map<String, String>> handleUserAlreadyExists(UserAlreadyExistsException ex) {
-        log.warn("Tentative de création d'un utilisateur existant: {}", ex.getMessage());
-        return buildErrorResponse(ex.getMessage(), HttpStatus.CONFLICT);
+    @ExceptionHandler(NoHandlerFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ErrorResponse handleNoHandlerFoundException(NoHandlerFoundException ex, WebRequest request) {
+        String requestUri = request.getDescription(false).replace("uri=", "");
+        log.warn("Endpoint non trouvé: {} {}", ex.getHttpMethod(), requestUri);
+        
+        return new ErrorResponse(
+            HttpStatus.NOT_FOUND.value(),
+            String.format("L'endpoint '%s %s' n'existe pas", ex.getHttpMethod(), ex.getRequestURL()),
+            LocalDateTime.now()
+        );
     }
 
     /**
-     * Gère les tentatives d'accès à un utilisateur inexistant.
+     * Gère les erreurs 404 pour les ressources statiques inexistantes (Spring 6.1+).
      *
-     * @param ex l'exception d'utilisateur non trouvé
-     * @return une réponse HTTP 404 (Not Found) avec un message d'erreur
+     * @param ex l'exception NoResourceFoundException
+     * @param request la requête web
+     * @return une réponse HTTP 404 avec un message clair
      */
-    @ExceptionHandler(UserNotFoundException.class)
-    public ResponseEntity<Map<String, String>> handleUserNotFound(UserNotFoundException ex) {
-        log.warn("Utilisateur non trouvé: {}", ex.getMessage());
-        return buildErrorResponse(ex.getMessage(), HttpStatus.NOT_FOUND);
+    @ExceptionHandler(NoResourceFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ErrorResponse handleNoResourceFoundException(NoResourceFoundException ex, WebRequest request) {
+        String requestUri = request.getDescription(false).replace("uri=", "");
+        log.warn("Ressource non trouvée: {}", requestUri);
+        
+        return new ErrorResponse(
+            HttpStatus.NOT_FOUND.value(),
+            String.format("La ressource '%s' n'a pas été trouvée", ex.getResourcePath()),
+            LocalDateTime.now()
+        );
     }
 
     /**
-     * Gère toutes les autres exceptions non gérées.
+     * Gestionnaire d'exception générique pour toutes les autres exceptions non gérées.
      *
-     * @param ex l'exception générique
-     * @return une réponse HTTP 500 (Internal Server Error) avec un message générique
+     * @param ex l'exception non gérée
+     * @param request la requête web
+     * @return une réponse HTTP 500 avec un message d'erreur générique
      */
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<Map<String, String>> handleGenericException(Exception ex) {
-        log.error("Erreur inattendue: {}", ex.getMessage(), ex);
-        return buildErrorResponse(UNEXPECTED_ERROR_MESSAGE, HttpStatus.INTERNAL_SERVER_ERROR);
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ErrorResponse handleAllUncaughtException(Exception ex, WebRequest request) {
+        String requestUri = request.getDescription(false).replace("uri=", "");
+        log.error("Erreur inattendue sur {}: {}", requestUri, ex.getMessage(), ex);
+        
+        return new ErrorResponse(
+            HttpStatus.INTERNAL_SERVER_ERROR.value(),
+            "Une erreur interne s'est produite. Veuillez réessayer plus tard.",
+            LocalDateTime.now()
+        );
     }
 
-    /**
-     * Construit une réponse d'erreur standardisée.
-     *
-     * @param message le message d'erreur
-     * @param status  le statut HTTP de la réponse
-     * @return une réponse HTTP avec le message d'erreur
-     */
-    private ResponseEntity<Map<String, String>> buildErrorResponse(String message, HttpStatus status) {
-        return ResponseEntity.status(status)
-                .body(Map.of(ERROR_MESSAGE_KEY, message));
-    }
 }

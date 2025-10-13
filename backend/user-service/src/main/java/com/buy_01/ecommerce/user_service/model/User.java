@@ -35,12 +35,17 @@ public class User {
     private String password;
 
     @Builder.Default
-    private UserRole role = UserRole.USER; // A defaut: User
+    private UserRole role = UserRole.CLIENT; // Par défaut: CLIENT
 
     private String avatar;
     
     public enum UserRole {
-        USER,       // Regular user
-        ADMIN,      // Administrator
+        CLIENT,     // Client standard
+        SELLER,     // Vendeur
+        ADMIN;      // Administrateur
+        
+        public String getAuthority() {
+            return "ROLE_" + this.name();
+        }
     }
 }

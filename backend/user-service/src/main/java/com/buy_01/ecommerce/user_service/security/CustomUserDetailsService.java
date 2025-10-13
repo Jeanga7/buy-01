@@ -1,0 +1,28 @@
+package com.buy_01.ecommerce.user_service.security;
+
+import com.buy_01.ecommerce.user_service.model.User;
+import com.buy_01.ecommerce.user_service.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.stereotype.Service;
+
+/**
+ * Service personnalisé pour charger les détails des utilisateurs à partir de la base de données.
+ */
+@Service
+@RequiredArgsConstructor
+public class CustomUserDetailsService implements UserDetailsService {
+
+    private final UserRepository userRepository;
+
+    @Override
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        // Recherche de l'utilisateur par email
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("Aucun utilisateur trouvé avec l'email : " + email));
+        
+        return new CustomUserDetails(user);
+    }
+}

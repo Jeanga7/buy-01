@@ -1,7 +1,9 @@
 package com.buy_01.ecommerce.user_service.dto;
 
+import com.buy_01.ecommerce.user_service.model.User;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 
@@ -23,7 +25,8 @@ public class RegisterRequest {
     @Size(min = 6, message = "Le mot de passe doit contenir au moins 6 caractères")
     private String password;
     
-    // Champ pour la confirmation du mot de passe
-    @NotBlank(message = "La confirmation du mot de passe est obligatoire")
-    private String confirmPassword;
+    private String avatar; // URL de l'avatar (optionnel)
+    
+    @NotNull(message = "Le rôle est obligatoire")
+    private User.UserRole role = User.UserRole.CLIENT; // Rôle par défaut: CLIENT
 }
