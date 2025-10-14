@@ -97,14 +97,19 @@ public class UserService {
         // Vérifier si c'est le premier utilisateur
         boolean isFirstUser = userRepository.count() == 0;
         
-        // Si c'est le premier utilisateur, on le définit comme administrateur
+        // Seul le premier utilisateur peut être ADMIN
         if (isFirstUser) {
             user.setRole(User.UserRole.ADMIN);
-        } else if (user.getRole() == null) {
+        } else {
+            // Pour tous les autres utilisateurs, on s'assure qu'ils ne peuvent pas être ADMIN
+            if (user.getRole() == User.UserRole.ADMIN) {
+                throw new IllegalArgumentException("Seul le premier utilisateur peut être ADMIN");
+            }
             // Si aucun rôle n'est spécifié, on met CLIENT par défaut
-            user.setRole(User.UserRole.CLIENT);
+            if (user.getRole() == null) {
+                user.setRole(User.UserRole.CLIENT);
+            }
         }
-        // Sinon, on garde le rôle spécifié (SELLER ou autre)
 
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         return userRepository.save(user);
@@ -162,11 +167,26 @@ public class UserService {
                     existingUser.setAvatar(userDetails.getAvatar());
                 }
                 
-                // Seul un admin peut changer le rôle et il doit être fourni explicitement
-                if (userDetails.getRole() != null && 
-                    SecurityContextHolder.getContext().getAuthentication()
+                // Gestion des changements de rôle
+                if (userDetails.getRole() != null) {
+                    // Vérifier si l'utilisateur actuel est un admin
+                    boolean isAdmin = SecurityContextHolder.getContext().getAuthentication()
                         .getAuthorities().stream()
-                        .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))) {
+                        .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+                    
+                    // Seul un admin peut modifier les rôles
+                    if (!isAdmin) {
+                        throw new SecurityException("Seuls les administrateurs peuvent modifier les rôles");
+                    }
+                    
+                    // Empêcher de se promouvoir soi-même
+                    Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+                    if (auth != null && auth.getName().equals(existingUser.getEmail()) && 
+                        userDetails.getRole() == User.UserRole.ADMIN) {
+                        throw new SecurityException("Vous ne pouvez pas vous promouvoir vous-même administrateur");
+                    }
+                    
+                    // Mettre à jour le rôle
                     existingUser.setRole(userDetails.getRole());
                 }
                 

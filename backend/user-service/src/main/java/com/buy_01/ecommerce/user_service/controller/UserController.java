@@ -1,6 +1,8 @@
 package com.buy_01.ecommerce.user_service.controller;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springframework.http.ResponseEntity;
@@ -78,13 +80,15 @@ public class UserController {
     /**
      * Supprime un utilisateur
      * @param id ID de l'utilisateur à supprimer
-     * @return Réponse vide avec statut 204 (No Content)
+     * @return Réponse avec un message de confirmation et statut 200 (OK)
      */
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN') or @userSecurity.isCurrentUser(authentication, #id)")
-    public ResponseEntity<Void> deleteUser(@PathVariable String id) {
+    public ResponseEntity<Map<String, String>> deleteUser(@PathVariable String id) {
         userService.deleteUser(id);
-        return ResponseEntity.noContent().build();
+        Map<String, String> response = new HashMap<>();
+        response.put("message", "Utilisateur supprimé avec succès");
+        return ResponseEntity.ok(response);
     }
 
     /**

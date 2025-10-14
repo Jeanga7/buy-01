@@ -43,6 +43,8 @@ status:
 # Nettoyage de la base de données
 db:
 	docker exec mongodb mongosh -u root -p example --eval "use userdb; db.user.drop(); db.user_session.drop()"
+	docker-compose down -v mongodb     
+	docker-compose up -d mongodb
 	@echo "✅ Base de données nettoyée"
 
 # Rebuild complet

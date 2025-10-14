@@ -1,7 +1,10 @@
 package com.buy_01.ecommerce.user_service.exception;
 
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.stream.Collectors;
+
+import com.buy_01.ecommerce.user_service.model.User;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -12,6 +15,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.servlet.NoHandlerFoundException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
@@ -28,6 +32,41 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    /**
+     * Gère les erreurs de validation des champs annotés avec @Valid.
+     *
+     * @param ex l'exception de validation
+     * @return une réponse HTTP 400 avec les détails des erreurs de validation
+     */
+    /**
+     * Gère les erreurs de désérialisation des énumérations (comme les rôles invalides).
+     *
+     * @param ex l'exception de désérialisation
+     * @return une réponse HTTP 400 avec un message d'erreur explicite
+     */
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleHttpMessageNotReadableException(HttpMessageNotReadableException ex) {
+        String errorMessage = "Requête invalide";
+        
+        // Vérifie si l'erreur est liée à une énumération invalide
+        if (ex.getCause() != null && ex.getCause().getMessage() != null) {
+            String message = ex.getCause().getMessage();
+            if (message.contains("not one of the values accepted for Enum class")) {
+                errorMessage = "Valeur de rôle invalide. Les rôles valides sont : " + 
+                    Arrays.stream(User.UserRole.values())
+                        .map(Enum::name)
+                        .collect(Collectors.joining(", "));
+            }
+        }
+        
+        return new ErrorResponse(
+            HttpStatus.BAD_REQUEST.value(),
+            errorMessage,
+            LocalDateTime.now()
+        );
+    }
 
     /**
      * Gère les erreurs de validation des champs annotés avec @Valid.
