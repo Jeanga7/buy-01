@@ -53,6 +53,20 @@ public class UserSessionService {
         return sessionRepository.findByUserIdAndActiveTrue(userId);
     }
     
+    /**
+     * Invalide toutes les sessions actives pour un appareil spécifique
+     * @param userId L'ID de l'utilisateur
+     * @param deviceId L'ID de l'appareil
+     */
+    @Transactional
+    public void invalidateSessionsForDevice(String userId, String deviceId) {
+        sessionRepository.findByUserIdAndDeviceIdAndActiveTrue(userId, deviceId)
+            .forEach(session -> {
+                session.setActive(false);
+                sessionRepository.save(session);
+            });
+    }
+    
     @Transactional
     public void revokeSession(String userId, String sessionId) {
         sessionRepository.findById(sessionId)

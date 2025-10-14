@@ -11,5 +11,6 @@ public interface UserSessionRepository extends MongoRepository<UserSession, Stri
     List<UserSession> findByUserId(String userId);
     List<UserSession> findByUserIdAndActiveTrue(String userId);
     boolean existsByUserIdAndDeviceIdAndActiveTrue(String userId, String deviceId);
+    List<UserSession> findByUserIdAndDeviceIdAndActiveTrue(String userId, String deviceId);
     void deleteByUserId(String userId);
 }

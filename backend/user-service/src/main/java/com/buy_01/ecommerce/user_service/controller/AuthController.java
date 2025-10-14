@@ -89,16 +89,16 @@ public class AuthController {
         // 2. Générer un deviceId unique
         String deviceId = userSessionService.generateDeviceId(request, userAgent);
         
-        // 3. Vérifier si une session existe déjà pour cet appareil
-        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-        if (userSessionService.isSessionValid(userDetails.getUsername(), deviceId)) {
-            throw new UserAuthenticationException("Une session est déjà active sur cet appareil");
-        }
+        // 3. Invalider toute session existante pour ce device
+        userSessionService.invalidateSessionsForDevice(loginRequest.getEmail().toLowerCase().trim(), deviceId);
 
-        // 4. Générer le token JWT
+        // 4. Charger les détails de l'utilisateur
+        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+
+        // 5. Générer le token JWT
         String token = jwtUtil.generateToken(userDetails, deviceId);
         
-        // 5. Créer une nouvelle session
+        // 6. Créer une nouvelle session
         userSessionService.createSession(
             userDetails.getUsername(),
             token,

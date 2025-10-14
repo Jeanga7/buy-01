@@ -18,6 +18,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.buy_01.ecommerce.user_service.dto.UserResponse;
+import com.buy_01.ecommerce.user_service.dto.PromoteToAdminRequest;
+import com.buy_01.ecommerce.user_service.dto.UpdateUserResult;
 import com.buy_01.ecommerce.user_service.exception.UserNotFoundException;
 import com.buy_01.ecommerce.user_service.mapper.UserMapper;
 import com.buy_01.ecommerce.user_service.model.User;
@@ -53,7 +55,7 @@ public class UserController {
      * @return Détails de l'utilisateur
      */
     @GetMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN') or @userSecurity.isCurrentUser(authentication, #id)")
+    @PreAuthorize("@userSecurity.canViewUser(authentication, #id)")
     public ResponseEntity<UserResponse> getUserById(@PathVariable String id) {
         return userService.findById(id)
                 .map(userMapper::toDto)
@@ -68,13 +70,22 @@ public class UserController {
      * @return L'utilisateur mis à jour
      */
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN') or @userSecurity.isCurrentUser(authentication, #id)")
-    public ResponseEntity<UserResponse> updateUser(
+    @PreAuthorize("@userSecurity.canEditUser(authentication, #id)")
+    public ResponseEntity<?> updateUser(
             @PathVariable String id,
             @RequestBody User userDetails,
             @RequestHeader(value = "Authorization", required = false) String authHeader) {
-        User updatedUser = userService.updateUser(id, userDetails, authHeader);
-        return ResponseEntity.ok(userMapper.toDto(updatedUser));
+        UpdateUserResult result = userService.updateUser(id, userDetails, authHeader);
+        
+        // Si un nouveau token a été généré (changement d'email), on le renvoie dans la réponse
+        if (result.getNewToken() != null) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("user", userMapper.toDto(result.getUser()));
+            response.put("token", result.getNewToken());
+            return ResponseEntity.ok(response);
+        }
+        
+        return ResponseEntity.ok(userMapper.toDto(result.getUser()));
     }
 
     /**
@@ -83,7 +94,7 @@ public class UserController {
      * @return Réponse avec un message de confirmation et statut 200 (OK)
      */
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN') or @userSecurity.isCurrentUser(authentication, #id)")
+    @PreAuthorize("@userSecurity.canEditUser(authentication, #id)")
     public ResponseEntity<Map<String, String>> deleteUser(@PathVariable String id) {
         userService.deleteUser(id);
         Map<String, String> response = new HashMap<>();
@@ -91,23 +102,32 @@ public class UserController {
         return ResponseEntity.ok(response);
     }
 
-    /**
+        /**
      * Promouvoir un utilisateur au rôle d'administrateur
      * @param id ID de l'utilisateur à promouvoir
      * @return L'utilisateur mis à jour avec le rôle ADMIN
+     * @throws UserNotFoundException si l'utilisateur n'est pas trouvé
+     * @throws IllegalStateException si l'utilisateur est déjà administrateur
      */
     @PostMapping("/{id}/promote-to-admin")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<UserResponse> promoteToAdmin(@PathVariable String id) {
-        // Vérifier que l'utilisateur existe
-        userService.findById(id)
-                .orElseThrow(() -> new UserNotFoundException("Utilisateur non trouvé avec l'ID : " + id));
-                
-        // Créer un utilisateur avec uniquement le rôle mis à jour
-        User updateRequest = new User();
-        updateRequest.setRole(User.UserRole.ADMIN);
-        User updatedUser = userService.updateUser(id, updateRequest, null);
+    public ResponseEntity<UserResponse> promoteToAdmin(
+            @PathVariable String id,
+            @RequestBody(required = false) PromoteToAdminRequest request) {
         
-        return ResponseEntity.ok(userMapper.toDto(updatedUser));
+        // Vérifier que l'utilisateur existe et récupérer ses informations actuelles
+        User existingUser = userService.findById(id)
+                .orElseThrow(() -> new UserNotFoundException("Utilisateur non trouvé avec l'ID : " + id));
+        
+        // Vérifier si l'utilisateur est déjà administrateur
+        if (existingUser.getRole() == User.UserRole.ADMIN) {
+            throw new IllegalStateException("L'utilisateur est déjà administrateur");
+        }
+        
+        // Mettre à jour uniquement le rôle
+        existingUser.setRole(User.UserRole.ADMIN);
+        UpdateUserResult result = userService.updateUser(id, existingUser, null);
+        
+        return ResponseEntity.ok(userMapper.toDto(result.getUser()));
     }
 }

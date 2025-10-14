@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.buy_01.ecommerce.user_service.dto.LoginRequest;
+import com.buy_01.ecommerce.user_service.dto.UpdateUserResult;
 import com.buy_01.ecommerce.user_service.exception.UserAlreadyExistsException;
 import com.buy_01.ecommerce.user_service.exception.UserNotFoundException;
 import com.buy_01.ecommerce.user_service.model.User;
@@ -136,11 +137,22 @@ public class UserService {
      * @throws UserAlreadyExistsException si le nouvel email est déjà utilisé
      * @throws IllegalArgumentException si l'ID est invalide
      */
+    /**
+     * Met à jour un utilisateur existant
+     * @param id ID de l'utilisateur à mettre à jour
+     * @param userDetails Détails de l'utilisateur à mettre à jour
+     * @param currentToken Le token JWT actuel (optionnel, utilisé pour l'invalidation)
+     * @return Un objet UpdateUserResult contenant l'utilisateur mis à jour et éventuellement un nouveau token
+     * @throws UserNotFoundException si l'utilisateur n'existe pas
+     * @throws UserAlreadyExistsException si le nouvel email est déjà utilisé
+     * @throws SecurityException si l'utilisateur n'a pas les droits nécessaires
+     */
     @Transactional
-    public User updateUser(String id, User userDetails, String currentToken) {
+    public UpdateUserResult updateUser(String id, User userDetails, String currentToken) {
         return userRepository.findById(id)
             .map(existingUser -> {
-                boolean emailChanged = !existingUser.getEmail().equals(userDetails.getEmail());
+                boolean emailChanged = userDetails.getEmail() != null && 
+                                    !existingUser.getEmail().equals(userDetails.getEmail());
                 
                 // Vérifier si l'email est modifié et s'il est déjà utilisé
                 if (emailChanged && userRepository.existsByEmail(userDetails.getEmail())) {
@@ -191,15 +203,25 @@ public class UserService {
                 }
                 
                 User updatedUser = userRepository.save(existingUser);
+                String newToken = null;
                 
-                // Si l'email a changé, on invalide l'ancien token
+                // Si l'email a changé, on invalide l'ancien token et on en génère un nouveau
                 if (emailChanged && currentToken != null && currentToken.startsWith("Bearer ")) {
                     String token = currentToken.substring(7);
                     tokenBlacklistService.invalidateToken(token);
                     log.info("Token invalidated for user " + oldEmail + " after email change to " + updatedUser.getEmail());
+                    
+                    // Générer un nouveau token avec le nouvel email
+                    newToken = jwtUtil.generateToken(
+                        new org.springframework.security.core.userdetails.User(
+                            updatedUser.getEmail(),
+                            "",
+                            List.of(() -> "ROLE_" + updatedUser.getRole().name())
+                        )
+                    );
                 }
                 
-                return updatedUser;
+                return new UpdateUserResult(updatedUser, newToken);
             })
             .orElseThrow(() -> new UserNotFoundException("User not found with id: " + id));
     }

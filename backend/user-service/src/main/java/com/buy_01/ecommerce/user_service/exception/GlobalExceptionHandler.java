@@ -74,6 +74,28 @@ public class GlobalExceptionHandler {
      * @param ex l'exception de validation
      * @return une réponse HTTP 400 avec les détails des erreurs de validation
      */
+    /**
+     * Gère les erreurs d'état non valide (comme promouvoir un administrateur existant)
+     *
+     * @param ex l'exception d'état non valide
+     * @return une réponse HTTP 400 avec un message d'erreur explicite
+     */
+    @ExceptionHandler(IllegalStateException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleIllegalStateException(IllegalStateException ex) {
+        return new ErrorResponse(
+            HttpStatus.BAD_REQUEST.value(),
+            ex.getMessage(),
+            LocalDateTime.now()
+        );
+    }
+
+    /**
+     * Gère les erreurs de validation des champs annotés avec @Valid.
+     *
+     * @param ex l'exception de validation
+     * @return une réponse HTTP 400 avec les détails des erreurs de validation
+     */
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleValidationExceptions(MethodArgumentNotValidException ex) {
