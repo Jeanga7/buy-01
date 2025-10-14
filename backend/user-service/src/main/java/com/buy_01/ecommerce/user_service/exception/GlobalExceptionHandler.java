@@ -1,12 +1,12 @@
 package com.buy_01.ecommerce.user_service.exception;
 
-import com.buy_01.ecommerce.user_service.dto.ErrorResponse;
-import jakarta.validation.ConstraintViolation;
-import jakarta.validation.ConstraintViolationException;
-import lombok.extern.slf4j.Slf4j;
+import java.time.LocalDateTime;
+import java.util.stream.Collectors;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -15,8 +15,11 @@ import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.NoHandlerFoundException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
-import java.time.LocalDateTime;
-import java.util.stream.Collectors;
+import com.buy_01.ecommerce.user_service.dto.ErrorResponse;
+
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Gestionnaire global des exceptions pour l'application.
@@ -193,6 +196,40 @@ public class GlobalExceptionHandler {
         return new ErrorResponse(
             HttpStatus.NOT_FOUND.value(),
             String.format("La ressource '%s' n'a pas été trouvée", ex.getResourcePath()),
+            LocalDateTime.now()
+        );
+    }
+
+    /**
+     * Gère les erreurs de méthode HTTP non supportée (405).
+     *
+     * @param ex l'exception de méthode non supportée
+     * @param request la requête web
+     * @return une réponse HTTP 405 avec le message d'erreur approprié
+     */
+    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+    @ResponseStatus(HttpStatus.METHOD_NOT_ALLOWED)
+    public ErrorResponse handleHttpRequestMethodNotSupported(
+            HttpRequestMethodNotSupportedException ex, 
+            WebRequest request) {
+        
+        String requestUri = request.getDescription(false).replace("uri=", "");
+        String[] supportedMethods = ex.getSupportedMethods();
+        String supportedMethodsStr = supportedMethods != null 
+                ? String.join(", ", supportedMethods)
+                : "Aucune méthode supportée";
+        
+        String errorMessage = String.format(
+            "La méthode HTTP '%s' n'est pas supportée pour cette URL. Méthodes supportées : %s",
+            ex.getMethod(),
+            supportedMethodsStr
+        );
+        
+        log.warn("Méthode non supportée: {} {}", ex.getMethod(), requestUri);
+        
+        return new ErrorResponse(
+            HttpStatus.METHOD_NOT_ALLOWED.value(),
+            errorMessage,
             LocalDateTime.now()
         );
     }

@@ -57,3 +57,9 @@ Les variables d'environnement sont définies dans le fichier `.env` à la racine
 - Si un service ne démarre pas, vérifiez les logs avec `docker-compose logs [nom_du_service]`
 - Assurez-vous que les ports nécessaires ne sont pas déjà utilisés
 - Vérifiez que vous avez assez de mémoire disponible pour exécuter tous les services
+
+## Suppression Base de Données
+
+```bash
+docker exec mongodb mongosh -u root -p example --eval "use userdb; db.user.drop(); db.user_session.drop()"
+```

@@ -736,8 +736,7 @@
     {
       "key": "session_id",
       "value": "",
-      "description": "ID de la session à révoquer (à remplir après avoir listé les sessions)"
-    },
+      "description": "ID de la session à révoquer (à remplir après avoir listé les sessions)",
       "type": "string"
     },
     {
