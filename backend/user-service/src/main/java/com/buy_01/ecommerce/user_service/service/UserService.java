@@ -16,13 +16,14 @@ import com.buy_01.ecommerce.user_service.dto.LoginRequest;
 import com.buy_01.ecommerce.user_service.dto.UpdateUserResult;
 import com.buy_01.ecommerce.user_service.exception.UserAlreadyExistsException;
 import com.buy_01.ecommerce.user_service.exception.UserNotFoundException;
+import com.buy_01.ecommerce.user_service.kafka.UserEventPublisher;
 import com.buy_01.ecommerce.user_service.model.User;
-import com.buy_01.ecommerce.user_service.security.TokenBlacklistService;
-import lombok.extern.slf4j.Slf4j;
 import com.buy_01.ecommerce.user_service.repository.UserRepository;
 import com.buy_01.ecommerce.user_service.security.JwtUtil;
+import com.buy_01.ecommerce.user_service.security.TokenBlacklistService;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Service de gestion des utilisateurs
@@ -38,6 +39,7 @@ public class UserService {
     private final AuthenticationManager authenticationManager;
     private final JwtUtil jwtUtil;
     private final TokenBlacklistService tokenBlacklistService;
+    private final UserEventPublisher userEventPublisher;
 
     public List<User> findAllUsers() {
         return userRepository.findAll();
@@ -113,7 +115,20 @@ public class UserService {
         }
 
         user.setPassword(passwordEncoder.encode(user.getPassword()));
-        return userRepository.save(user);
+        User savedUser = userRepository.save(user);
+        
+        // Si l'utilisateur est un vendeur, publier un événement
+        if (savedUser.getRole() == User.UserRole.SELLER) {
+            try {
+                userEventPublisher.publishSellerCreatedEvent(savedUser.getId());
+            } catch (Exception e) {
+                log.error("Erreur lors de la publication de l'événement de création de vendeur: {}", e.getMessage(), e);
+                // On ne propage pas l'erreur pour ne pas échouer l'inscription
+                // à cause d'un problème avec Kafka
+            }
+        }
+        
+        return savedUser;
     }
     
     /**
@@ -128,15 +143,6 @@ public class UserService {
         SecurityContextHolder.clearContext();
     }
 
-    /**
-     * Met à jour un utilisateur existant
-     * @param id ID de l'utilisateur à mettre à jour
-     * @param userDetails Détails de l'utilisateur à mettre à jour
-     * @return L'utilisateur mis à jour
-     * @throws UserNotFoundException si l'utilisateur n'existe pas
-     * @throws UserAlreadyExistsException si le nouvel email est déjà utilisé
-     * @throws IllegalArgumentException si l'ID est invalide
-     */
     /**
      * Met à jour un utilisateur existant
      * @param id ID de l'utilisateur à mettre à jour
@@ -221,6 +227,13 @@ public class UserService {
                     );
                 }
                 
+                if (updatedUser.getRole() == User.UserRole.SELLER) {
+                    try {
+                        userEventPublisher.publishSellerCreatedEvent(updatedUser.getId());
+                    } catch (Exception e) {
+                        log.error("Erreur lors de la publication de l'événement de création de vendeur: {}", e.getMessage(), e);
+                    }
+                }
                 return new UpdateUserResult(updatedUser, newToken);
             })
             .orElseThrow(() -> new UserNotFoundException("User not found with id: " + id));
