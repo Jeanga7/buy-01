@@ -1,2 +1,23 @@
-<div id="neon-rain-container"></div>
+<div class="pattern-rain-container">
+  @for (item of rainItems(); track item.id) {
+    <div
+      class="rain-hexagon"
+      [style.width.px]="item.size"
+      [style.height.px]="item.size"
+      [style.left.%]="item.startX"
+      [style.animationDelay.s]="item.delay"
+      [style.--animation-duration.s]="item.duration"
+      [style.filter]="'blur(' + item.blur + 'px)'"
+      [style.--wind-intensity.px]="item.windIntensity"
+      [style.border]="item.type === 'svg' ? '1px solid ' + item.color : 'none'"
+      [style.boxShadow]="'0 0 10px ' + item.color + ', 0 0 20px ' + item.color"
+    >
+      @if (item.type === 'svg') {
+        <div [innerHTML]="item.content"></div>
+      } @else if (item.type === 'png') {
+        <img [src]="item.content" [alt]="'rain item'" />
+      }
+    </div>
+  }
+</div>
 <router-outlet></router-outlet>
