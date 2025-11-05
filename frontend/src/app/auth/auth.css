@@ -117,7 +117,7 @@
 
 .form-group input {
   width: 100%;
-  padding: 10px 0;
+  padding: 10px 0 10px 30px; /* Added left padding for icon */
   border: none;
   border-bottom: 1px solid #D1D5DB;
   background-color: transparent;
@@ -129,7 +129,7 @@
 .form-group label {
   position: absolute;
   top: 10px;
-  left: 0;
+  left: 30px; /* Adjusted left position to account for icon */
   font-size: 1rem;
   color: var(--color-text-gray);
   pointer-events: none;
@@ -142,9 +142,9 @@
 }
 
 /* Floating label animation */
-.form-group input:focus + label,
-.form-group input:not(:placeholder-shown) + label,
-.form-group input:-webkit-autofill + label { /* Handle autofill */
+.form-group input:focus ~ label,
+.form-group input:not(:placeholder-shown) ~ label,
+.form-group input:-webkit-autofill ~ label { /* Handle autofill */
   top: -16px;
   left: 0;
   font-size: 0.8rem;
@@ -263,4 +263,48 @@
   color: var(--color-link-blue);
   font-weight: 600;
   text-decoration: none;
+}
+
+.input-icon {
+  position: absolute;
+  left: 0;
+  top: 10px;
+  color: var(--color-text-gray);
+  font-size: 1.1rem;
+}
+
+@media (max-width: 600px) {
+  .auth-card {
+    padding: 1.5rem 1.5rem; /* Reduced padding for smaller screens */
+    min-height: auto; /* Remove fixed min-height */
+  }
+
+  .auth-card h2 {
+    font-size: 1.75rem; /* Smaller heading for mobile */
+  }
+
+  .name-avatar-group {
+    flex-direction: column; /* Stack name and avatar vertically */
+    align-items: center; /* Center items when stacked */
+  }
+
+  .avatar-picker {
+    bottom: 0; /* Adjust avatar position */
+    margin-bottom: 1rem; /* Add some space below avatar */
+  }
+
+  .form-group input,
+  .form-group label {
+    font-size: 0.9rem; /* Slightly smaller font for inputs/labels */
+  }
+
+  .cta-button {
+    font-size: 1rem; /* Smaller button font */
+    padding: 0.8rem;
+  }
+
+  .social-button {
+    font-size: 0.9rem; /* Smaller social button font */
+    padding: 0.6rem 0.8rem;
+  }
 }

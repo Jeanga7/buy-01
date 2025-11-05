@@ -2,21 +2,23 @@
   <div class="auth-card">
     <img src="logo-ori.png" alt="10-Yub Logo" class="auth-logo-img">
 
-    <h2>Connectez-vous à votre Hub</h2>
+    <h2>Connectez-vous</h2>
 
     <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
       <div class="form-group">
+        <i class="fa-jelly-duo fa-regular fa-envelope input-icon"></i>
         <input type="email" id="email" formControlName="email" placeholder=" " />
         <label for="email">Adresse e-mail</label>
       </div>
 
       <div class="form-group">
+        <i class="fa-notdog fa-solid fa-key input-icon"></i>
         <input [type]="passwordVisible ? 'text' : 'password'" id="password" formControlName="password" placeholder=" " />
         <label for="password">Mot de passe</label>
         <!-- Eye icon -->
-        <svg *ngIf="!passwordVisible" (click)="togglePasswordVisibility()" class="password-toggle-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm0-2a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z"></path><path d="M21.82 11.72C19.87 8.2 16.12 6 12 6s-7.87 2.2-9.82 5.72a.999.999 0 0 0 0 .56C4.13 15.8 7.88 18 12 18s7.87-2.2 9.82-5.72a.999.999 0 0 0 0-.56ZM12 16c-3.11 0-6.2-1.66-7.95-4C5.8 9.66 8.89 8 12 8s6.2 1.66 7.95 4c-1.75 2.34-4.84 4-7.95 4Z"></path></svg>
+        <i *ngIf="!passwordVisible" (click)="togglePasswordVisibility()" class="fa-solid fa-eye password-toggle-icon"></i>
         <!-- Eye-slash icon -->
-        <svg *ngIf="passwordVisible" (click)="togglePasswordVisibility()" class="password-toggle-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm0-2a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z"></path><path d="M21.82 11.72C19.87 8.2 16.12 6 12 6s-7.87 2.2-9.82 5.72a.999.999 0 0 0 0 .56C4.13 15.8 7.88 18 12 18s7.87-2.2 9.82-5.72a.999.999 0 0 0 0-.56ZM12 16c-3.11 0-6.2-1.66-7.95-4C5.8 9.66 8.89 8 12 8s6.2 1.66 7.95 4c-1.75 2.34-4.84 4-7.95 4Z"></path></svg>
+        <i *ngIf="passwordVisible" (click)="togglePasswordVisibility()" class="fa-solid fa-eye-slash password-toggle-icon"></i>
       </div>
 
       <!-- "Se souvenir de moi" à ajouter si besoin -->
