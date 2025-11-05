@@ -1,0 +1,24 @@
+#neon-rain-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  z-index: -1; /* Ensure it's behind other content */
+}
+
+.neon-raindrop {
+  position: absolute;
+  animation-name: fall;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  transform: translateY(-100%); /* Start above the viewport */
+  transition: opacity 1s ease-out; /* Smooth fade-in */
+}
+
+@keyframes fall {
+  to {
+    transform: translateY(100vh); /* Fall to the bottom of the viewport */
+  }
+}
