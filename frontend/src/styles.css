@@ -1,0 +1,35 @@
+/* Import Clash Display font */
+@import url('https://api.fontshare.com/v2/css?f[]=clash-display@700,600,500&display=swap');
+
+/* Define color palette as CSS variables */
+:root {
+  --color-bg-dark: #1E1E2E;
+  --color-card-light: #F5F6FA;
+  --color-neon-purple: #7C3AED;
+  --color-cta-orange-start: #FF9E3D;
+  --color-cta-orange-end: #FF7E3D;
+  --color-link-blue: #1B4FFF;
+  --color-text-dark: #1E1E2E;
+  --color-text-gray: #6B7280;
+  --font-primary: 'Clash Display', sans-serif;
+}
+
+/* Global Styles */
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
+  font-size: 16px;
+  background-color: var(--color-bg-dark);
+  color: var(--color-text-dark);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  /* Subtle hexagonal grid background */
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+    linear-gradient(rgba(255, 255, 255, 0.01) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.01) 1px, transparent 1px);
+  background-size: 100px 100px, 100px 100px, 20px 20px, 20px 20px;
+  background-position: -2px -2px, -2px -2px, -1px -1px, -1px -1px;
+}

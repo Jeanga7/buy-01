@@ -1,0 +1,266 @@
+/* Styles for the authentication pages */
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.auth-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: 2rem;
+}
+
+.auth-card {
+  background-color: var(--color-card-light);
+  border-radius: 24px;
+  padding: 2.5rem 3rem;
+  width: 100%;
+  max-width: 450px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  position: relative;
+  overflow: hidden; /* To contain decorative elements */
+  min-height: 620px; /* Ensure same height for login and register cards */
+  animation: fadeInUp 0.6s ease-out forwards;
+}
+
+/* Custom Avatar Input Styles */
+.name-avatar-group {
+  display: flex;
+  align-items: flex-end; /* Aligns input bottom with avatar bottom */
+  gap: 1rem;
+  margin-bottom: 2.25rem; /* Match form-group spacing */
+}
+
+.name-avatar-group .form-group {
+  margin-bottom: 0; /* Prevent double margin */
+}
+
+.name-group {
+  flex-grow: 1;
+}
+
+.avatar-picker {
+  text-align: center;
+  position: relative;
+  bottom: -16px;
+}
+
+.avatar-text-label {
+  margin-top: 5px;
+  font-size: 0.875rem;
+  color: var(--color-text-gray);
+}
+
+.avatar-label {
+  display: block;
+  width: 90px; /* Increased size */
+  height: 90px;
+  border-radius: 50%;
+  background-color: #F5F6FA;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  transition: background-color 0.2s ease;
+  border: 1px solid #D1D5DB; /* Thicker border */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); /* Add shadow */
+}
+
+.avatar-label:hover {
+  border-color: var(--color-neon-purple);
+}
+
+.avatar-preview-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.avatar-icon-img {
+  width: 92px;
+  height: 92px;
+}
+
+.hidden-file-input {
+  display: none;
+}
+
+.auth-logo-img {
+  display: block;
+  max-width: 150px; /* Reduced size */
+  margin: 0 auto 2rem auto; /* Centered logo */
+}
+
+.auth-card h2 {
+  font-family: var(--font-primary);
+  font-size: 2.25rem;
+  font-weight: 600;
+  text-align: center;
+  margin-bottom: 2rem;
+  color: var(--color-text-dark);
+}
+
+.form-group {
+  position: relative;
+  margin-bottom: 2.25rem; /* Increased spacing */
+}
+
+.form-group input {
+  width: 100%;
+  padding: 10px 0;
+  border: none;
+  border-bottom: 1px solid #D1D5DB;
+  background-color: transparent;
+  font-size: 1rem;
+  color: var(--color-text-dark);
+  transition: border-color 0.2s ease;
+}
+
+.form-group label {
+  position: absolute;
+  top: 10px;
+  left: 0;
+  font-size: 1rem;
+  color: var(--color-text-gray);
+  pointer-events: none;
+  transition: all 0.2s ease-in-out;
+}
+
+.form-group input:focus {
+  outline: none;
+  border-bottom-color: var(--color-neon-purple);
+}
+
+/* Floating label animation */
+.form-group input:focus + label,
+.form-group input:not(:placeholder-shown) + label,
+.form-group input:-webkit-autofill + label { /* Handle autofill */
+  top: -16px;
+  left: 0;
+  font-size: 0.8rem;
+  color: var(--color-neon-purple);
+}
+
+/* Keep autofill background transparent */
+.form-group input:-webkit-autofill,
+.form-group input:-webkit-autofill:hover, 
+.form-group input:-webkit-autofill:focus {
+  -webkit-text-fill-color: var(--color-text-dark);
+  -webkit-box-shadow: 0 0 0px 1000px var(--color-card-light) inset;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
+.password-toggle-icon {
+  position: absolute;
+  top: 10px;
+  right: 0;
+  cursor: pointer;
+  width: 24px; /* Increased size */
+  height: 24px; /* Increased size */
+  color: var(--color-neon-purple); /* More vibrant color */
+}
+
+/* Social Login Buttons */
+.social-login-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem; /* Space between buttons */
+  margin-top: 1.5rem; /* Space above social buttons */
+  margin-bottom: 1.5rem; /* Space below social buttons */
+}
+
+.social-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 1rem;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  border: 1px solid #E5E7EB;
+  background-color: #FFFFFF;
+  color: var(--color-text-dark);
+}
+
+.social-button:hover {
+  background-color: #F5F6FA;
+}
+
+.social-button .icon {
+  width: 20px;
+  height: 20px;
+  margin-right: 0.75rem;
+}
+
+/* Divider for social login */
+.divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  margin: 1.5rem 0; /* Spacing above and below */
+  color: var(--color-text-gray);
+  font-size: 0.875rem;
+}
+
+.divider::before,
+.divider::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid #E5E7EB;
+}
+
+.divider:not(:empty)::before {
+  margin-right: .5em;
+}
+
+.divider:not(:empty)::after {
+  margin-left: .5em;
+}
+
+.cta-button {
+  width: 100%;
+  padding: 1rem;
+  border: none;
+  border-radius: 12px;
+  font-family: var(--font-primary);
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: white;
+  cursor: pointer;
+  background-image: linear-gradient(to right, var(--color-cta-orange-start), var(--color-cta-orange-end));
+  transition: transform 0.2s ease-in-out;
+}
+
+.cta-button:hover {
+  transform: scale(1.02);
+}
+
+.cta-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.secondary-link {
+  text-align: center;
+  margin-top: 2rem;
+  font-size: 0.875rem;
+  color: var(--color-text-gray);
+}
+
+.secondary-link a {
+  color: var(--color-link-blue);
+  font-weight: 600;
+  text-decoration: none;
+}
