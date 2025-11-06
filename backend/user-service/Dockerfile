@@ -4,7 +4,7 @@ WORKDIR /app
 # Copy only the POM file first to leverage Docker cache
 COPY pom.xml .
 # Download dependencies (cached unless pom.xml changes)
-RUN mvn dependency:go-offline -B
+RUN rm -rf ~/.m2/repository && mvn dependency:go-offline -B
 # Copy source code
 COPY src ./src
 # Package the application

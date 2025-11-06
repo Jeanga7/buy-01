@@ -56,6 +56,8 @@ L'application suit une architecture microservices avec les composants suivants :
 4. **Accéder aux services** :
    - Eureka Dashboard: http://localhost:8761
    - API Gateway: http://localhost:8080
+   - **Swagger UI (Centralisé via API Gateway)**: http://localhost:8080/swagger-ui.html
+     (Affiche la documentation agrégée de tous les microservices. Utilisez le menu déroulant en haut à gauche pour sélectionner un service spécifique.)
    - User Service: http://localhost:8081
    - Product Service: http://localhost:8082
    - MongoDB: mongodb://localhost:27017

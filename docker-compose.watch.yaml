@@ -1,0 +1,31 @@
+watch:
+  - service: api-gateway
+    path: ./backend/api-gateway/src
+    action: sync
+  - service: api-gateway
+    path: ./backend/api-gateway/pom.xml
+    action: rebuild
+  - service: user-service
+    path: ./backend/user-service/src
+    action: sync
+  - service: user-service
+    path: ./backend/user-service/pom.xml
+    action: rebuild
+  - service: product-service
+    path: ./backend/product-service/src
+    action: sync
+  - service: product-service
+    path: ./backend/product-service/pom.xml
+    action: rebuild
+  - service: frontend
+    path: ./frontend/src
+    action: rebuild
+  - service: frontend
+    path: ./frontend/angular.json
+    action: rebuild
+  - service: frontend
+    path: ./frontend/package.json
+    action: rebuild
+  - service: frontend
+    path: ./frontend/nginx.conf
+    action: rebuild

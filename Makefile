@@ -1,4 +1,4 @@
-.PHONY: help clean start stop restart restart-service logs status db
+.PHONY: help clean start stop restart restart-service logs status db watch
 
 # Aide rapide
 help:
@@ -11,6 +11,7 @@ help:
 	@echo "  make status   - Affiche l'état des conteneurs"
 	@echo "  make db       - Nettoie la base de données"
 	@echo "  make build    - Reconstruit et relance les conteneurs"
+	@echo "  make watch    - Démarre la surveillance des fichiers pour les mises à jour automatiques (docker compose watch)"
 
 # Alias pour up
 start:
@@ -50,3 +51,10 @@ db:
 # Rebuild complet
 build:
 	docker-compose up -d --build
+
+# Lance les conteneurs avec la configuration de surveillance
+
+
+# Démarre la surveillance des fichiers pour les mises à jour automatiques
+watch:
+	docker compose watch
