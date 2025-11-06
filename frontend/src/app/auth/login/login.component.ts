@@ -30,9 +30,15 @@ export class LoginComponent {
 
   onSubmit() {
     if (this.loginForm.valid) {
-      this.authService.login(this.loginForm.value);
-      // Redirection ou gestion de la réponse à venir
-      // this.router.navigate(['/']);
+      this.authService.login(this.loginForm.value).subscribe({
+        next: (response) => {
+          console.log('Login successful', response);
+          this.router.navigate(['/']);
+        },
+        error: (error) => {
+          console.error('Login failed', error);
+        }
+      });
     }
   }
 }

@@ -48,14 +48,19 @@ export class RegisterComponent {
 
   onSubmit() {
     if (this.registerForm.valid) {
-      const formData = new FormData();
-      Object.keys(this.registerForm.value).forEach(key => {
-        formData.append(key, this.registerForm.get(key)?.value);
+      const { name, email, password } = this.registerForm.value;
+      this.authService.register({ name, email, password }).subscribe({
+        next: (response) => {
+          console.log('Registration successful', response);
+          // Optionally, show a success message to the user
+          this.router.navigate(['/auth/login']); // Redirect to login after successful registration
+        },
+        error: (error) => {
+          console.error('Registration failed', error);
+          // Optionally, display an error message to the user
+          // e.g., this.errorMessage = error.message;
+        }
       });
-      
-      this.authService.register(formData);
-      // Redirection ou gestion de la réponse à venir
-      // this.router.navigate(['/auth/login']);
     }
   }
 }

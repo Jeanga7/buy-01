@@ -182,6 +182,19 @@ services:
       retries: 3
       start_period: 40s
 
+  frontend:
+    container_name: frontend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "4200:80"
+    depends_on:
+      api-gateway:
+        condition: service_healthy
+    networks:
+      - buy-network
+
 
 networks:
   buy-network:
