@@ -23,6 +23,10 @@
 
       <!-- "Se souvenir de moi" à ajouter si besoin -->
 
+      <div *ngIf="errorMessage" class="error-message">
+        {{ errorMessage }}
+      </div>
+
       <button type="submit" class="cta-button" [disabled]="loginForm.invalid">Connexion</button>
 
       <div class="divider">OU</div>

@@ -17,6 +17,7 @@ export class RegisterComponent {
   router = inject(Router);
   avatarPreview: string | ArrayBuffer | null = null;
   passwordVisible = false;
+  errorMessage: string | null = null;
 
   constructor(private fb: FormBuilder) {
     this.registerForm = this.fb.group({
@@ -56,9 +57,8 @@ export class RegisterComponent {
           this.router.navigate(['/auth/login']); // Redirect to login after successful registration
         },
         error: (error) => {
+          this.errorMessage = error.message;
           console.error('Registration failed', error);
-          // Optionally, display an error message to the user
-          // e.g., this.errorMessage = error.message;
         }
       });
     }

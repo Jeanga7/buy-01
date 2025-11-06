@@ -16,6 +16,7 @@ export class LoginComponent {
   authService = inject(AuthService);
   router = inject(Router);
   passwordVisible = false;
+  errorMessage: string | null = null;
 
   constructor(private fb: FormBuilder) {
     this.loginForm = this.fb.group({
@@ -36,6 +37,7 @@ export class LoginComponent {
           this.router.navigate(['/']);
         },
         error: (error) => {
+          this.errorMessage = error.message;
           console.error('Login failed', error);
         }
       });

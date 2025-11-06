@@ -6,8 +6,9 @@ import { Router } from '@angular/router';
 
 interface LoginResponse {
   token: string;
-  user: any;
-  expiresIn: number;
+  message: string;
+  deviceId: string;
+  expiresAt: string; // LocalDateTime is serialized as a string
 }
 
 @Injectable({
@@ -31,10 +32,10 @@ export class AuthService {
   }
 
   private setSession(authResult: LoginResponse) {
-    const expiresAt = new Date().getTime() + (authResult.expiresIn * 1000);
+    const expiresAt = new Date(authResult.expiresAt).getTime();
     
     localStorage.setItem(this.TOKEN_KEY, authResult.token);
-    localStorage.setItem(this.USER_KEY, JSON.stringify(authResult.user));
+    // localStorage.setItem(this.USER_KEY, JSON.stringify(authResult.user)); // user is not part of the response anymore
     localStorage.setItem('expires_at', expiresAt.toString());
     
     this.authStatus.next(true);

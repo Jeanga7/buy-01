@@ -1,15 +1,13 @@
 import { Routes } from '@angular/router';
 import { AuthLayoutComponent } from './layouts/auth-layout.component';
 import { MainLayoutComponent } from './layouts/main-layout.component';
+import { authGuard } from './auth/auth.guard';
 
 export const routes: Routes = [
     {
         path: '',
         component: MainLayoutComponent,
-        children: [
-            // Les routes principales de votre application (dashboard, etc.) viendront ici
-            { path: '', redirectTo: 'auth', pathMatch: 'full' } // Pour l'instant, on redirige vers la page de connexion
-        ]
+        canActivate: [authGuard],
     },
     {
         path: 'auth',

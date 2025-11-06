@@ -37,6 +37,10 @@
         <i *ngIf="passwordVisible" (click)="togglePasswordVisibility()" class="fa-solid fa-eye-slash password-toggle-icon"></i>
       </div>
 
+      <div *ngIf="errorMessage" class="error-message">
+        {{ errorMessage }}
+      </div>
+
       <button type="submit" class="cta-button" [disabled]="registerForm.invalid">Inscription</button>
     </form>
 
