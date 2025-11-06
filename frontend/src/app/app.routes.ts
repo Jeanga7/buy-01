@@ -1,13 +1,13 @@
 import { Routes } from '@angular/router';
 import { AuthLayoutComponent } from './layouts/auth-layout.component';
-import { MainLayoutComponent } from './layouts/main-layout.component';
 import { authGuard } from './auth/auth.guard';
 import { authRedirectGuard } from './auth/auth-redirect.guard';
+import { MainPageComponent } from './pages/main-page/main-page.component';
 
 export const routes: Routes = [
     {
         path: '',
-        component: MainLayoutComponent,
+        component: MainPageComponent,
         canActivate: [authGuard],
     },
     {
